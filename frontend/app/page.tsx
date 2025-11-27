@@ -20,6 +20,9 @@ import { Badge } from "@/components/ui/badge";
 import { AddStockDialog } from "@/components/AddStockDialog";
 import { StockActionsMenu } from "@/components/StockActionsMenu";
 
+// Force dynamic rendering - disable caching for real-time data
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const { stocks, stats } = await getDashboardData();
 

@@ -3,7 +3,7 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { stockMeta, dailyMetrics, quarterlyFinancials } from "@/db/schema";
-import { eq, desc, asc, gte, and } from "drizzle-orm";
+import { eq, desc, asc } from "drizzle-orm";
 
 export interface StockInfo {
   symbol: string;
@@ -132,18 +132,11 @@ function cleanDividendYieldData(data: DailyMetricItem[]): DailyMetricItem[] {
  * Internal implementation of getStockDetail
  * Fetches 5 years of data for accurate percentile calculation,
  * but only returns last 2 years to frontend for charting
+ *
+ * Updated to use MAX(trade_date) approach instead of date-based filtering
+ * to avoid timezone-related data loss issues on Vercel.
  */
 async function getStockDetailImpl(symbol: string): Promise<StockDetailData> {
-  // Calculate date ranges
-  const now = new Date();
-  const fiveYearsAgo = new Date(now);
-  fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
-  const twoYearsAgo = new Date(now);
-  twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-
-  const fiveYearsAgoStr = fiveYearsAgo.toISOString().split('T')[0];
-  const twoYearsAgoStr = twoYearsAgo.toISOString().split('T')[0];
-
   // 1. Get stock basic info
   const infoResult = await db
     .select({
@@ -157,7 +150,8 @@ async function getStockDetailImpl(symbol: string): Promise<StockDetailData> {
 
   const info = infoResult[0] || null;
 
-  // 2. Get 5-year history for accurate percentile calculation
+  // 2. Get all historical data for this stock, sorted by date
+  // We'll filter in memory to avoid timezone issues
   const fullHistoryResult = await db
     .select({
       tradeDate: dailyMetrics.tradeDate,
@@ -168,12 +162,7 @@ async function getStockDetailImpl(symbol: string): Promise<StockDetailData> {
       pbTtm: dailyMetrics.pbTtm,
     })
     .from(dailyMetrics)
-    .where(
-      and(
-        eq(dailyMetrics.symbol, symbol),
-        gte(dailyMetrics.tradeDate, fiveYearsAgoStr)
-      )
-    )
+    .where(eq(dailyMetrics.symbol, symbol))
     .orderBy(asc(dailyMetrics.tradeDate));
 
   // Convert Decimal to number for all data
@@ -189,8 +178,11 @@ async function getStockDetailImpl(symbol: string): Promise<StockDetailData> {
   // 2.5 Clean dividend yield data to remove spikes and anomalies
   fullHistory = cleanDividendYieldData(fullHistory);
 
-  // 3. Calculate yield percentile thresholds using FULL 5-year data
-  const yields = fullHistory
+  // 3. Calculate yield percentile thresholds using recent data
+  // Use last 5 years of data if available, otherwise use all available data
+  const fiveYearsData = fullHistory.slice(-1250); // Approximate 5 years (250 trading days/year)
+
+  const yields = fiveYearsData
     .map((h) => h.dividendYieldTtm)
     .filter((y): y is number => y !== null)
     .sort((a, b) => a - b);
@@ -205,8 +197,9 @@ async function getStockDetailImpl(symbol: string): Promise<StockDetailData> {
     yieldPercentile20 = yields[Math.max(idx20, 0)];
   }
 
-  // 4. Filter to last 2 years for frontend display (reduce JSON payload)
-  const history = fullHistory.filter(h => h.tradeDate >= twoYearsAgoStr);
+  // 4. Return last 2 years for frontend display (reduce JSON payload)
+  // Approximately 500 trading days
+  const history = fullHistory.slice(-500);
 
   // Store total data count for checking data sufficiency
   const totalDataCount = fullHistory.length;
@@ -244,10 +237,10 @@ async function getStockDetailImpl(symbol: string): Promise<StockDetailData> {
 
   return {
     info,
-    history, // Only last 2 years returned to frontend
+    history, // Last ~2 years returned to frontend
     financials,
-    yieldPercentile80, // Calculated from full 5-year data
-    yieldPercentile20, // Calculated from full 5-year data
+    yieldPercentile80, // Calculated from ~5 years data
+    yieldPercentile20, // Calculated from ~5 years data
     totalDataCount, // Total records in database
   };
 }
