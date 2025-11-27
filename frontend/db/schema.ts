@@ -70,3 +70,14 @@ export const quarterlyFinancials = pgTable(
 export type StockMeta = typeof stockMeta.$inferSelect;
 export type DailyMetrics = typeof dailyMetrics.$inferSelect;
 export type QuarterlyFinancials = typeof quarterlyFinancials.$inferSelect;
+export type MarketMaster = typeof marketMaster.$inferSelect;
+
+// Market Master - All A-share stocks for autocomplete
+export const marketMaster = pgTable("market_master", {
+  symbol: varchar("symbol", { length: 20 }).primaryKey(),
+  name: varchar("name", { length: 50 }).notNull(),
+  sector: varchar("sector", { length: 50 }),
+  listStatus: varchar("list_status", { length: 10 }).default("L"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});

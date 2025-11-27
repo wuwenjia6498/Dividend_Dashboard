@@ -9,9 +9,10 @@
 ## 2. 技术栈架构
 * **前端：** Next.js (App Router), TypeScript, Tailwind CSS, Shadcn UI, Recharts (图表)。
 * **后端/API：** Next.js Server Actions (直接读取数据库)。
+
 * **数据库：** PostgreSQL (Schema 见下文)。
 * **ORM：** Drizzle ORM (用于 TS) 或直接 SQL。
-* **数据处理 (ETL)：** Python 脚本 (独立运行)，使用 `AkShare` 库抓取数据，处理后存入 PG 数据库。
+* **数据处理 (ETL)：** Python 脚本 (独立运行)，使用 `Tushare Pro` API 抓取数据，处理后存入 PG 数据库。
 
 ## 3. 核心业务逻辑
 
@@ -90,8 +91,10 @@ CREATE TABLE quarterly_financials (
 ## 5. 开发任务清单 (Roadmap)
 请按照以下顺序辅助我进行开发：
 1.  **环境搭建：** 初始化 Next.js 项目，配置 PostgreSQL 数据库连接。
-2.  **ETL 开发 (Python)：** 编写 `update_data.py`，实现从 AkShare 抓取数据、清洗、计算分位点、写入数据库的完整流程。
+2.  **ETL 开发 (Python)：** 编写 `update_data.py`，实现从 Tushare Pro 抓取数据、清洗、计算分位点、写入数据库的完整流程。
 3.  **API/数据层：** 在 Next.js 中编写读取数据库的 Service 层。
 4.  **前端实现：**
     * **Dashboard:** 列表展示股票池，高亮显示“红绿灯”状态。
     * **详情页:** 展示股价走势图 + 股息率通道图 + 财务指标雷达图。
+
+    

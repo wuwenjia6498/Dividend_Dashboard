@@ -74,8 +74,54 @@ export function StockCharts({
 
   if (chartData.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p>暂无历史数据</p>
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        {/* Chart A: Price Trend - Empty State */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              <div className="flex items-baseline gap-2">
+                <span>股价走势</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  (近 2 年)
+                </span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">暂无历史数据</p>
+                <p className="text-xs mt-2">
+                  如果是新添加的股票，请刷新页面查看最新数据
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Chart B: Dividend Yield Channel - Empty State */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              <div className="flex items-baseline gap-2">
+                <span>股息率通道</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  (图表显示近 2 年 | 分位点基于近 5 年计算)
+                </span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">暂无历史数据</p>
+                <p className="text-xs mt-2">
+                  如果是新添加的股票，请刷新页面查看最新数据
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -85,7 +131,14 @@ export function StockCharts({
       {/* Chart A: Price Trend */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">股价走势</CardTitle>
+          <CardTitle className="text-lg">
+            <div className="flex items-baseline gap-2">
+              <span>股价走势</span>
+              <span className="text-xs text-muted-foreground font-normal">
+                (近 2 年)
+              </span>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -122,7 +175,14 @@ export function StockCharts({
       {/* Chart B: Dividend Yield Channel */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">股息率通道</CardTitle>
+          <CardTitle className="text-lg">
+            <div className="flex items-baseline gap-2">
+              <span>股息率通道</span>
+              <span className="text-xs text-muted-foreground font-normal">
+                (图表显示近 2 年 | 分位点基于近 5 年计算)
+              </span>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">

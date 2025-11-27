@@ -1,0 +1,26 @@
+{
+  "name": "dividend-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "高股息与基本面量化投资看板 - 工作区根目录",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "dev:webpack": "cd frontend && npm run dev:webpack",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm start",
+    "lint": "cd frontend && npm run lint",
+    "db:generate": "cd frontend && npm run db:generate",
+    "db:migrate": "cd frontend && npm run db:migrate",
+    "db:push": "cd frontend && npm run db:push",
+    "db:studio": "cd frontend && npm run db:studio",
+    "install:frontend": "cd frontend && npm install"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+

@@ -17,6 +17,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AddStockDialog } from "@/components/AddStockDialog";
+import { StockActionsMenu } from "@/components/StockActionsMenu";
 
 export default async function DashboardPage() {
   const { stocks, stats } = await getDashboardData();
@@ -114,10 +116,15 @@ export default async function DashboardPage() {
         {/* Stock Table */}
         <Card>
           <CardHeader>
-            <CardTitle>股票池</CardTitle>
-            <CardDescription>
-              按股息率分位点排序，机会最大的排在前面
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle>股票池</CardTitle>
+                <CardDescription>
+                  按股息率分位点排序，机会最大的排在前面
+                </CardDescription>
+              </div>
+              <AddStockDialog />
+            </div>
           </CardHeader>
           <CardContent>
             {stocks.length === 0 ? (
@@ -138,6 +145,7 @@ export default async function DashboardPage() {
                     <TableHead className="text-right">股息率(TTM)</TableHead>
                     <TableHead className="text-right">股息率分位</TableHead>
                     <TableHead className="text-center">估值状态</TableHead>
+                    <TableHead className="text-center w-[70px]">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -152,6 +160,8 @@ export default async function DashboardPage() {
                           <Link
                             href={`/stock/${stock.symbol}`}
                             className="text-blue-600 hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
                           >
                             {stock.name}
                           </Link>
@@ -196,6 +206,9 @@ export default async function DashboardPage() {
                             {signal.color === "yellow" && "🟡 "}
                             {signal.label}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <StockActionsMenu symbol={stock.symbol} name={stock.name} />
                         </TableCell>
                       </TableRow>
                     );
