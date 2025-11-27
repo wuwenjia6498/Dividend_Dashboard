@@ -1,0 +1,45 @@
+name: Daily Stock Data Update
+
+on:
+  # Schedule: Run every day at 8:00 PM Beijing Time (UTC+8 = 12:00 UTC)
+  schedule:
+    - cron: '0 12 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run data update script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+        run: |
+          python scripts/update_data.py
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Stock data updated successfully at $(date)"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Stock data update failed at $(date)"
