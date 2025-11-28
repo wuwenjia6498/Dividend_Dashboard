@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -30,6 +31,13 @@ export function StockCharts({
   yieldPercentile80,
   yieldPercentile20,
 }: StockChartsProps) {
+  // Prevent SSR issues with charts - only render on client
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Format data for charts
   const chartData = history.map((item) => ({
     date: item.tradeDate,
@@ -92,7 +100,7 @@ export function StockCharts({
               <div className="text-center text-muted-foreground">
                 <p className="text-sm">暂无历史数据</p>
                 <p className="text-xs mt-2">
-                  如果是新添加的股票，请刷新页面查看最新数据
+                  如果是新添加的股票,请刷新页面查看最新数据
                 </p>
               </div>
             </div>
@@ -116,9 +124,54 @@ export function StockCharts({
               <div className="text-center text-muted-foreground">
                 <p className="text-sm">暂无历史数据</p>
                 <p className="text-xs mt-2">
-                  如果是新添加的股票，请刷新页面查看最新数据
+                  如果是新添加的股票,请刷新页面查看最新数据
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show loading skeleton during SSR and initial client render
+  if (!isMounted) {
+    return (
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        {/* Chart A: Loading State */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              <div className="flex items-baseline gap-2">
+                <span>股价走势</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  (近 2 年)
+                </span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">加载中...</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Chart B: Loading State */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              <div className="flex items-baseline gap-2">
+                <span>股息率通道</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  (图表显示近 2 年 | 分位点基于近 5 年计算)
+                </span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">加载中...</div>
             </div>
           </CardContent>
         </Card>
