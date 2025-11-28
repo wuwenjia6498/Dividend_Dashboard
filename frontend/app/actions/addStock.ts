@@ -4,67 +4,12 @@ import { db } from "@/db";
 import { stockMeta } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { exec } from "child_process";
-import { promisify } from "util";
-import path from "path";
-
-const execAsync = promisify(exec);
+import { fetchAndSaveLatestData } from "@/lib/stockDataService";
 
 export interface AddStockResult {
   success: boolean;
   message: string;
   error?: string;
-}
-
-/**
- * Execute Python script to fetch latest data for a specific stock
- * @param symbol - Stock symbol to update
- * @returns Promise<boolean> - true if successful, false if failed
- */
-async function fetchLatestStockData(symbol: string): Promise<boolean> {
-  try {
-    const currentDir = process.cwd();
-    const projectRoot = path.resolve(currentDir, '..');
-    const scriptPath = path.join(projectRoot, 'scripts', 'update_data.py');
-
-    console.log('='.repeat(60));
-    console.log(`[FetchLatest] Fetching latest data for: ${symbol}`);
-    console.log('='.repeat(60));
-
-    const fs = require('fs');
-    if (!fs.existsSync(scriptPath)) {
-      console.error(`[FetchLatest] ERROR: Script not found at ${scriptPath}`);
-      return false;
-    }
-
-    const command = `python -u "${scriptPath}" --symbol ${symbol}`;
-    console.log(`[FetchLatest] Executing: ${command}`);
-
-    const { stdout, stderr } = await execAsync(command, {
-      cwd: projectRoot,
-      timeout: 30000, // 30 seconds
-      env: process.env,
-    });
-
-    console.log(`[FetchLatest] Completed for ${symbol}`);
-    if (stdout) {
-      console.log(`[FetchLatest] Output:\n${stdout}`);
-    }
-    if (stderr && stderr.trim()) {
-      console.log(`[FetchLatest] Stderr:\n${stderr}`);
-    }
-
-    console.log('='.repeat(60));
-    return true;
-
-  } catch (error: any) {
-    console.error('='.repeat(60));
-    console.error(`[FetchLatest] ERROR for ${symbol}: ${error.message}`);
-    if (error.stdout) console.log(`[FetchLatest] Partial stdout:\n${error.stdout}`);
-    if (error.stderr) console.error(`[FetchLatest] Stderr:\n${error.stderr}`);
-    console.error('='.repeat(60));
-    return false;
-  }
 }
 
 /**
@@ -148,7 +93,7 @@ export async function addNewStock(
 
     // Fetch latest data (fast - only current day's data)
     console.log(`[AddStock] Fetching latest data for ${cleanSymbol}...`);
-    const dataFetchSuccess = await fetchLatestStockData(cleanSymbol);
+    const dataFetchSuccess = await fetchAndSaveLatestData(cleanSymbol);
 
     // Clear the cache for this stock's detail page to ensure fresh data is loaded
     if (dataFetchSuccess) {
@@ -171,7 +116,7 @@ export async function addNewStock(
     }
 
     // Add instruction for historical data
-    const historyInstruction = "\n\n📊 查看完整图表需要历史数据，请在终端运行：\npython scripts/backfill_history.py\n\n或等待每日自动更新任务完成。";
+    const historyInstruction = "\n\n📊 如需查看完整图表，请在股票详情页点击「回填历史数据」按钮。";
 
     return {
       success: true,

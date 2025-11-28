@@ -1,11 +1,7 @@
 "use server";
 
-import { exec } from "child_process";
-import { promisify } from "util";
-import path from "path";
 import { revalidatePath, revalidateTag } from "next/cache";
-
-const execAsync = promisify(exec);
+import { backfillHistoricalData } from "@/lib/stockDataService";
 
 export interface BackfillResult {
   success: boolean;
@@ -21,38 +17,8 @@ export async function backfillSingleStock(symbol: string): Promise<BackfillResul
   try {
     console.log(`[BackfillSingle] Starting backfill for ${symbol}...`);
 
-    const currentDir = process.cwd();
-    const projectRoot = path.resolve(currentDir, '..');
-    const scriptPath = path.join(projectRoot, 'scripts', 'backfill_single_stock.py');
-
-    // Check if script exists
-    const fs = require('fs');
-    if (!fs.existsSync(scriptPath)) {
-      console.error(`[BackfillSingle] Script not found: ${scriptPath}`);
-      return {
-        success: false,
-        message: "回填脚本不存在",
-      };
-    }
-
-    // Execute backfill script for single stock
-    const command = `python -u "${scriptPath}" --symbol ${symbol}`;
-    console.log(`[BackfillSingle] Executing: ${command}`);
-
-    const { stdout, stderr } = await execAsync(command, {
-      cwd: projectRoot,
-      timeout: 360000, // 6 minutes timeout (some stocks need 5+ minutes)
-      env: process.env,
-    });
-
-    console.log(`[BackfillSingle] Completed for ${symbol}`);
-    if (stdout) {
-      console.log(`[BackfillSingle] Output:\n${stdout}`);
-    }
-
-    // Parse record count from output
-    const recordMatch = stdout.match(/Saved (\d+) records/);
-    const recordCount = recordMatch ? parseInt(recordMatch[1]) : 0;
+    // Execute backfill using TypeScript service
+    const recordCount = await backfillHistoricalData(symbol);
 
     // Clear cache for this stock
     revalidateTag(`stock-detail-${symbol}`, "max");
