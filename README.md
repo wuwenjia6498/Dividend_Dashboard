@@ -1,4 +1,4 @@
-# 高股息与基本面量化投资看板
+# 高股息与基本面量化投资看板  
 
 High Dividend & Fundamental Monitor - 一个自动化的投资辅助工具，帮助管理高股息股票池。
 
