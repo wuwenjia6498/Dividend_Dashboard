@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AddStockDialog } from "@/components/AddStockDialog";
 import { StockActionsMenu } from "@/components/StockActionsMenu";
+import { RefreshButton } from "@/components/RefreshButton";
 
 // Force dynamic rendering - disable caching for real-time data
 export const dynamic = 'force-dynamic';
@@ -30,13 +31,16 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
-            高股息投资看板
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            基于股息率分位点的量化选股系统
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              高股息投资看板
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              基于股息率分位点的量化选股系统
+            </p>
+          </div>
+          <RefreshButton />
         </div>
 
         {/* Stats Cards */}

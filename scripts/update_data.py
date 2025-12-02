@@ -559,6 +559,14 @@ def process_single_stock(conn, symbol: str, name: str):
         print(f"  [SKIP] Could not fetch daily data for {symbol}")
         return False
 
+    # IMPORTANT: Skip update if dividend yield is missing
+    # This prevents overwriting good data with incomplete data
+    # (Tushare sometimes returns price but not dividend data in early trading hours)
+    if daily_data["dividend_yield_ttm"] is None or daily_data["dividend_yield_ttm"] <= 0:
+        print(f"  [SKIP] Dividend yield is missing or zero for {symbol} - data may be incomplete")
+        print(f"  [INFO] This is common in early trading hours. Try again later today.")
+        return False
+
     # Use the actual trade date from the API response
     trade_date_raw = daily_data.get('trade_date')
     if trade_date_raw:

@@ -15,9 +15,6 @@
     "db:studio": "cd frontend && npm run db:studio",
     "install:frontend": "cd frontend && npm install"
   },
-  "workspaces": [
-    "frontend"
-  ],
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
