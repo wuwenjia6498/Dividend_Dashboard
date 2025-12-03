@@ -22,7 +22,9 @@ import {
 } from "@/components/ui/command";
 import { searchStocks, SearchResult } from "@/app/actions/searchMarket";
 import { addNewStock } from "@/app/actions/addStock";
+import { triggerPipeline } from "@/app/actions/triggerPipeline";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function AddStockDialog() {
   const [open, setOpen] = useState(false);
@@ -81,11 +83,39 @@ export function AddStockDialog() {
 
       if (result.success) {
         setMessage({ type: "success", text: result.message });
-        // Close dialog after 5 seconds to give user time to read the message
+
+        // Trigger single stock data update in the background
+        toast.info("正在触发数据更新...", {
+          description: `即将自动拉取 ${selectedStock.symbol} 的最新数据`,
+          duration: 3000,
+        });
+
+        // Call triggerPipeline with the specific symbol
+        triggerPipeline(selectedStock.symbol).then((pipelineResult) => {
+          if (pipelineResult.success) {
+            toast.success("数据更新已触发！", {
+              description: pipelineResult.message,
+              duration: 5000,
+            });
+          } else {
+            toast.warning("数据更新触发失败", {
+              description: `${pipelineResult.message}。您可以稍后手动刷新数据。`,
+              duration: 5000,
+            });
+          }
+        }).catch((error) => {
+          console.error("Failed to trigger pipeline:", error);
+          toast.warning("数据更新触发失败", {
+            description: "股票已添加成功，但自动数据更新失败。您可以稍后手动刷新数据。",
+            duration: 5000,
+          });
+        });
+
+        // Close dialog after 3 seconds to give user time to read the message
         setTimeout(() => {
           setOpen(false);
           resetDialog();
-        }, 5000);
+        }, 3000);
       } else {
         setMessage({ type: "error", text: result.message });
       }

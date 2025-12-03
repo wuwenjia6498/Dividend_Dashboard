@@ -9,8 +9,10 @@ export interface TriggerPipelineResult {
 /**
  * Trigger the GitHub Actions workflow (daily_update.yml) to update stock data
  * This allows users to manually refresh data without waiting for the scheduled run
+ *
+ * @param symbol - Optional stock symbol to update (e.g., "600519"). If not provided, all active stocks will be updated.
  */
-export async function triggerPipeline(): Promise<TriggerPipelineResult> {
+export async function triggerPipeline(symbol?: string): Promise<TriggerPipelineResult> {
   try {
     // Get environment variables
     const githubToken = process.env.GITHUB_PAT;
@@ -33,7 +35,21 @@ export async function triggerPipeline(): Promise<TriggerPipelineResult> {
     console.log("=".repeat(60));
     console.log("[TriggerPipeline] Triggering GitHub Actions workflow");
     console.log(`[TriggerPipeline] API URL: ${apiUrl}`);
+    if (symbol) {
+      console.log(`[TriggerPipeline] Mode: Single stock update (${symbol})`);
+    } else {
+      console.log("[TriggerPipeline] Mode: Full update (all active stocks)");
+    }
     console.log("=".repeat(60));
+
+    // Build request body - add inputs only if symbol is provided
+    const requestBody: { ref: string; inputs?: { symbol: string } } = {
+      ref: "main", // Branch to run the workflow on
+    };
+
+    if (symbol) {
+      requestBody.inputs = { symbol };
+    }
 
     // Make API request to trigger the workflow
     const response = await fetch(apiUrl, {
@@ -43,9 +59,7 @@ export async function triggerPipeline(): Promise<TriggerPipelineResult> {
         Accept: "application/vnd.github.v3+json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        ref: "main", // Branch to run the workflow on
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     // Check if the request was successful
@@ -82,9 +96,14 @@ export async function triggerPipeline(): Promise<TriggerPipelineResult> {
     console.log("[TriggerPipeline] Workflow triggered successfully!");
     console.log("=".repeat(60));
 
+    // Customize message based on mode
+    const successMessage = symbol
+      ? `已触发股票 ${symbol} 的后台数据拉取！预计 1 分钟内完成。`
+      : "数据更新指令已发送！GitHub Actions 正在云端运行脚本，预计 2-3 分钟后完成。";
+
     return {
       success: true,
-      message: "数据更新指令已发送！GitHub Actions 正在云端运行脚本，预计 2-3 分钟后完成。",
+      message: successMessage,
     };
 
   } catch (error: any) {

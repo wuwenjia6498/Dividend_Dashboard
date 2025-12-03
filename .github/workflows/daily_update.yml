@@ -7,6 +7,11 @@ on:
 
   # Allow manual trigger
   workflow_dispatch:
+    inputs:
+      symbol:
+        description: 'Stock symbol to update (optional, e.g., 600519). If not provided, all active stocks will be updated.'
+        required: false
+        type: string
 
 jobs:
   update-data:
@@ -32,7 +37,13 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
         run: |
-          python scripts/update_data.py
+          if [ -n "${{ inputs.symbol }}" ]; then
+            echo "Running single stock update for: ${{ inputs.symbol }}"
+            python scripts/update_data.py --symbol ${{ inputs.symbol }}
+          else
+            echo "Running full update for all active stocks"
+            python scripts/update_data.py
+          fi
 
       - name: Notify on success
         if: success()
