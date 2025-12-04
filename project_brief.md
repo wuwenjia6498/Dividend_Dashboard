@@ -82,18 +82,20 @@ CREATE TABLE quarterly_financials (
 ```
 
 ## 5. 已实现功能 (Implemented Features)
-1.  **股票管理：**
+1. **股票管理：**
     * 支持通过弹窗搜索添加 (自动补全代码和行业)。
     * 支持列表移除 (软删除)。
-2.  **数据更新 (ETL)：**
-    * 支持 `python update_data.py --symbol xxx` 单只快速更新 (添加股票后自动触发)。
+
+2. **数据更新 (ETL)：**
+    * 目前仅支持全量更新：`python update_data.py` (每天 20:00 定时运行)，不支持单只触发。
     * 支持 `python sync_market.py` 同步全市场名单。
     * 集成重试机制 (Retry) 和速率限制。
-3.  **可视化：**
+
+3. **可视化：**
     * 首页：红绿灯信号看板 (强制动态渲染，无视时区差异)。
     * 详情页：股息率通道图 (含机会/风险线)、财务体检卡片 (含 Tooltip 注解)。
 
 ## 6. 待办/维护计划 (Next Steps)
+* [优先级 High] 开发单只股票即时更新模式 (Single Stock Update Pipeline)。
 * 监控 Vercel 上的数据时效性。
 * 持续优化 Tushare 数据源的稳定性。
-* (未来) 考虑增加邮件/微信预警功能。
