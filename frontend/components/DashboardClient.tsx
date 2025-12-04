@@ -78,15 +78,16 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
     };
   }, [highlightedSymbol]);
 
-  // Check if waiting stock appears in the list (runs on stocks update)
+  // Check if waiting stock appears in the list with complete data (runs on stocks update)
   useEffect(() => {
     if (!waitingForSymbol) return;
 
-    // Check if the stock we're waiting for now exists in the list
-    const stockExists = stocks.some(s => s.symbol === waitingForSymbol);
+    // Check if the stock we're waiting for now exists with complete data
+    const stockWithData = stocks.find(s => s.symbol === waitingForSymbol);
+    const hasCompleteData = stockWithData && stockWithData.closePrice !== null;
 
-    if (stockExists) {
-      // Stock found! Trigger highlight and stop waiting
+    if (hasCompleteData) {
+      // Stock found with complete data! Trigger highlight and stop waiting
       setHighlightedSymbol(waitingForSymbol);
       setWaitingForSymbol(null);
       toast.dismiss(); // Dismiss the loading toast
@@ -122,14 +123,15 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
   }, [waitingForSymbol, router]);
 
   const handleStockAdded = (symbol: string) => {
-    // Check if stock already exists
-    const stockExists = stocks.some(s => s.symbol === symbol);
+    // Check if stock already exists with complete data
+    const stockWithData = stocks.find(s => s.symbol === symbol);
+    const hasCompleteData = stockWithData && stockWithData.closePrice !== null;
 
-    if (stockExists) {
-      // Stock already in list - highlight immediately
+    if (hasCompleteData) {
+      // Stock already in list with complete data - highlight immediately
       setHighlightedSymbol(symbol);
     } else {
-      // Stock not yet in list - start polling
+      // Stock not yet in list or has incomplete data - start polling
       setWaitingForSymbol(symbol);
       toast.loading("等待数据同步...", {
         description: "正在等待新股票数据出现，请稍候",
