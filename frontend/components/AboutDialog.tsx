@@ -30,11 +30,10 @@ export function AboutDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="max-w-[780px] max-h-[85vh] overflow-hidden flex flex-col about-dialog-content"
+        className="max-w-[780px] max-h-[85vh] overflow-hidden flex flex-col about-dialog-content sm:max-w-[780px]"
         data-about-dialog="true"
         style={{
           maxWidth: '780px',
-          width: '90vw',
         }}
       >
         <DialogHeader className="shrink-0 pb-4 border-b">
