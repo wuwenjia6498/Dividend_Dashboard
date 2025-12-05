@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { AddStockDialog } from "@/components/AddStockDialog";
 import { StockActionsMenu } from "@/components/StockActionsMenu";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -26,6 +27,7 @@ import { AboutDialog } from "@/components/AboutDialog";
 import { getSignalStatus } from "@/lib/signals";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Search } from "lucide-react";
 
 interface Stock {
   symbol: string;
@@ -51,6 +53,7 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
   const router = useRouter();
   const [highlightedSymbol, setHighlightedSymbol] = useState<string | null>(null);
   const [waitingForSymbol, setWaitingForSymbol] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Handle scrolling and highlighting when a stock is added
   useEffect(() => {
@@ -140,6 +143,18 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
       });
     }
   };
+
+  // Filter stocks based on search query
+  const filteredStocks = stocks.filter((stock) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const symbol = stock.symbol.toLowerCase();
+    const name = stock.name.toLowerCase();
+    const sector = (stock.sector || "").toLowerCase();
+    
+    return symbol.includes(query) || name.includes(query) || sector.includes(query);
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -240,7 +255,7 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
         {/* Stock Table */}
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between mb-4">
               <div>
                 <CardTitle>股票池</CardTitle>
                 <CardDescription>
@@ -249,6 +264,26 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
               </div>
               <AddStockDialog onStockAdded={handleStockAdded} />
             </div>
+            {/* Search Input */}
+            <div className="space-y-2">
+              <div className="relative">
+                <div className="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="搜索股票代码、名称或行业..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              {searchQuery && (
+                <p className="text-sm text-muted-foreground">
+                  找到 {filteredStocks.length} 个匹配结果
+                </p>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {stocks.length === 0 ? (
@@ -256,6 +291,13 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
                 <p className="text-lg mb-2">暂无股票数据</p>
                 <p className="text-sm">
                   请先运行 Python ETL 脚本获取数据
+                </p>
+              </div>
+            ) : filteredStocks.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-lg mb-2">未找到匹配的股票</p>
+                <p className="text-sm">
+                  请尝试其他搜索关键词
                 </p>
               </div>
             ) : (
@@ -273,7 +315,7 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {stocks.map((stock) => {
+                  {filteredStocks.map((stock) => {
                     const signal = getSignalStatus(stock.yieldPercentile);
                     const isHighlighted = highlightedSymbol === stock.symbol;
 

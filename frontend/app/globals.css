@@ -120,3 +120,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 强制 AboutDialog 居中显示 */
+[data-slot="dialog-content"][data-about-dialog="true"],
+.about-dialog-content[data-slot="dialog-content"] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  max-width: 780px !important;
+  width: 90vw !important;
+}
