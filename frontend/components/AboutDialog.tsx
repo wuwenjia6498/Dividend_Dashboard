@@ -3,16 +3,17 @@
 import { useState } from "react";
 import {
   HelpCircle,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  DialogPortal,
+  DialogOverlay,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { cn } from "@/lib/utils";
 
 /**
  * AboutDialog Component
@@ -29,24 +30,36 @@ export function AboutDialog() {
           使用说明
         </Button>
       </DialogTrigger>
-      <DialogContent 
-        className="max-w-[780px] max-h-[85vh] overflow-hidden flex flex-col about-dialog-content sm:max-w-[780px] !translate-x-[-50%] !translate-y-[-50%]"
-        data-about-dialog="true"
-        style={{
-          maxWidth: '780px',
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 50,
-        } as React.CSSProperties}
-      >
-        <DialogHeader className="shrink-0 pb-4 border-b">
-          <DialogTitle className="text-2xl font-bold">使用说明</DialogTitle>
-          <DialogDescription>
-            了解本项目的核心逻辑、信号含义以及风控规则
-          </DialogDescription>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPrimitive.Content
+          data-slot="dialog-content"
+          data-about-dialog="true"
+          className={cn(
+            "bg-background rounded-lg border shadow-lg",
+            "fixed z-50",
+            "top-1/2 left-1/2",
+            "-translate-x-1/2 -translate-y-1/2",
+            "w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)]",
+            "max-w-[780px]",
+            "max-h-[90vh] sm:max-h-[85vh]",
+            "flex flex-col overflow-hidden p-6",
+            "data-[state=open]:animate-in",
+            "data-[state=closed]:animate-out",
+            "data-[state=closed]:fade-out-0",
+            "data-[state=open]:fade-in-0",
+            "data-[state=closed]:zoom-out-95",
+            "data-[state=open]:zoom-in-95",
+            "duration-200"
+          )}
+        >
+          {/* 标题栏 */}
+          <div className="shrink-0 pb-4 border-b mb-4">
+            <h2 className="text-2xl font-bold mb-2">使用说明</h2>
+            <p className="text-sm text-muted-foreground">
+              了解本项目的核心逻辑、信号含义以及风控规则
+            </p>
+          </div>
 
         <div className="overflow-y-auto flex-1 min-h-0 pr-2">
           <div className="space-y-6 py-4">
@@ -158,7 +171,16 @@ export function AboutDialog() {
             </section>
           </div>
         </div>
-      </DialogContent>
+
+        {/* 关闭按钮 */}
+        <DialogPrimitive.Close
+          className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+      </DialogPortal>
     </Dialog>
   );
 }
