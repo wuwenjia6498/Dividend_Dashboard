@@ -32,6 +32,7 @@ export function LoadHistoricalData({
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialCountRef = useRef(currentDataCount);
+  const elapsedTimeRef = useRef(0); // Track elapsed time to avoid closure issues
 
   // Cleanup intervals on unmount
   useEffect(() => {
@@ -50,16 +51,20 @@ export function LoadHistoricalData({
     setPolling(true);
     setPollingSeconds(0);
     setProgressData({ addedCount: 0, progressPercentage: 0 });
+    elapsedTimeRef.current = 0;
 
     // Start timer to show elapsed time
     timerIntervalRef.current = setInterval(() => {
-      setPollingSeconds((prev) => prev + 1);
+      elapsedTimeRef.current += 1;
+      setPollingSeconds(elapsedTimeRef.current);
     }, 1000);
 
     // Poll every 3 seconds to check if backfill is complete
     const checkProgress = async () => {
       try {
         const progress = await checkBackfillProgress(symbol, initialCountRef.current);
+
+        console.log(`[LoadHistorical] Progress check: ${progress.addedCount} added, ${progress.currentCount} total, complete: ${progress.isComplete}`);
 
         // Update progress data for real-time display
         setProgressData({
@@ -69,17 +74,25 @@ export function LoadHistoricalData({
 
         if (progress.isComplete) {
           // Backfill complete! Stop polling and reload
+          console.log('[LoadHistorical] Backfill detected as complete, reloading page...');
           stopPolling();
           setMessage({
             type: "success",
             text: `✅ 历史数据回填完成！已加载 ${progress.currentCount} 条记录（新增 ${progress.addedCount} 条）。页面即将刷新...`,
           });
 
+          // Force reload with cache bypass
           setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } else if (pollingSeconds >= 180) {
+            console.log('[LoadHistorical] Executing page reload...');
+            window.location.href = window.location.href;
+          }, 1500);
+          return; // Stop further checks
+        }
+
+        // Check timeout using ref instead of state
+        if (elapsedTimeRef.current >= 180) {
           // Timeout after 3 minutes
+          console.log('[LoadHistorical] Polling timeout reached');
           stopPolling();
           setMessage({
             type: "info",
@@ -107,6 +120,7 @@ export function LoadHistoricalData({
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
+    elapsedTimeRef.current = 0;
   };
 
   // Only show prompt if:
@@ -137,8 +151,8 @@ export function LoadHistoricalData({
           });
 
           setTimeout(() => {
-            window.location.reload();
-          }, 3000);
+            window.location.href = window.location.href;
+          }, 2000);
         } else {
           // Serverless execution - start polling
           setMessage({
@@ -175,8 +189,7 @@ export function LoadHistoricalData({
               历史数据不足
             </h3>
             <p className="text-sm text-blue-700 mb-3">
-              当前数据库中共有 {currentDataCount} 条历史记录，图表显示最近 {displayedDataCount} 条数据。
-              为了更准确的分位点计算和完整的历史趋势分析，建议加载完整的5年历史数据（约需10-30秒）。
+              为了更准确的分位点计算和完整的历史趋势分析，建议加载完整的5年历史数据。
             </p>
 
             {message && (

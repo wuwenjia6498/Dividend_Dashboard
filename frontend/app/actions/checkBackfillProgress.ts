@@ -38,9 +38,14 @@ export async function checkBackfillProgress(
       ? Math.min(100, (addedCount / expectedToAdd) * 100)
       : 100;
 
-    // Consider backfill complete if we have significantly more records
-    // We'll consider it complete if count increased by at least 500 records
-    const isComplete = currentCount >= initialCount + 500 || currentCount >= 1000;
+    // Consider backfill complete if:
+    // 1. We have at least 300 records (enough for meaningful analysis)
+    // 2. OR we added at least 200 records (significant backfill happened)
+    // 3. OR we have at least 1000 records (full 5-year dataset)
+    const isComplete =
+      currentCount >= 300 ||
+      addedCount >= 200 ||
+      currentCount >= 1000;
 
     return {
       currentCount,
