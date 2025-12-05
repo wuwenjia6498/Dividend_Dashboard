@@ -175,7 +175,7 @@ export function AddStockDialog({ onStockAdded }: AddStockDialogProps = {}) {
             <DialogHeader>
               <DialogTitle>添加新股票</DialogTitle>
               <DialogDescription>
-                搜索并选择要添加到追踪池的股票。添加后会自动获取最新数据，完整历史数据需要单独回填。
+                搜索并选择要添加到追踪池的股票。添加后会自动获取最新数据（最多等待90秒），完整历史数据需要单独回填。
               </DialogDescription>
             </DialogHeader>
 
@@ -290,7 +290,7 @@ export function AddStockDialog({ onStockAdded }: AddStockDialogProps = {}) {
                 onClick={handleSubmit}
                 disabled={step === "submitting" || !selectedStock}
               >
-                {step === "submitting" ? "添加中..." : "添加到追踪池"}
+                {step === "submitting" ? "正在获取数据，请稍候..." : "添加到追踪池"}
               </Button>
             </DialogFooter>
           </>

@@ -10,6 +10,10 @@ import path from "path";
 
 const execAsync = promisify(exec);
 
+// Vercel deployment configuration
+export const maxDuration = 120; // 2 minutes for serverless function
+export const dynamic = "force-dynamic";
+
 export interface AddStockResult {
   success: boolean;
   message: string;
@@ -42,7 +46,7 @@ async function fetchLatestStockData(symbol: string): Promise<boolean> {
 
     const { stdout, stderr } = await execAsync(command, {
       cwd: projectRoot,
-      timeout: 30000, // 30 seconds
+      timeout: 90000, // 90 seconds - increased to handle slow networks
       env: process.env,
     });
 
@@ -63,6 +67,12 @@ async function fetchLatestStockData(symbol: string): Promise<boolean> {
     if (error.stdout) console.log(`[FetchLatest] Partial stdout:\n${error.stdout}`);
     if (error.stderr) console.error(`[FetchLatest] Stderr:\n${error.stderr}`);
     console.error('='.repeat(60));
+
+    // Check if it's a timeout error
+    if (error.killed && error.signal === 'SIGTERM') {
+      console.error(`[FetchLatest] Operation timed out after 90 seconds`);
+    }
+
     return false;
   }
 }
@@ -167,7 +177,7 @@ export async function addNewStock(
     if (dataFetchSuccess) {
       dataStatusText = "已获取最新数据。";
     } else {
-      dataStatusText = "获取数据失败，请稍后重试。";
+      dataStatusText = "获取数据失败（可能由于网络超时或数据源问题），但股票已添加成功。";
     }
 
     // Add instruction for historical data
