@@ -10,10 +10,6 @@ import path from "path";
 
 const execAsync = promisify(exec);
 
-// Vercel deployment configuration
-export const maxDuration = 120; // 2 minutes for serverless function
-export const dynamic = "force-dynamic";
-
 export interface AddStockResult {
   success: boolean;
   message: string;

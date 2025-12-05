@@ -15,6 +15,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// Increase timeout for server actions (backfilling historical data)
+export const dynamic = 'force-dynamic';
+export const maxDuration = 120; // 2 minutes
+
 interface PageProps {
   params: Promise<{ symbol: string }>;
 }
