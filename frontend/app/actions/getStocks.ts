@@ -29,40 +29,37 @@ export interface DashboardData {
  * Get dashboard data: all active stocks with their latest daily metrics
  * Sorted by yield_percentile descending (best opportunities first)
  *
- * Uses DISTINCT ON to ensure we get the latest record for each stock,
- * regardless of server timezone or date filtering issues.
+ * Uses PostgreSQL window function to efficiently get the latest record for each stock.
  */
 export async function getDashboardData(): Promise<DashboardData> {
-  // Use PostgreSQL DISTINCT ON to get the latest record for each stock
-  // This is more robust than date-based filtering and works regardless of timezone
-  const latestMetrics = await db
-    .select({
-      symbol: dailyMetrics.symbol,
-      tradeDate: dailyMetrics.tradeDate,
-      closePrice: dailyMetrics.closePrice,
-      dividendYieldTtm: dailyMetrics.dividendYieldTtm,
-      yieldPercentile: dailyMetrics.yieldPercentile,
-      pePercentile: dailyMetrics.pePercentile,
-    })
-    .from(dailyMetrics)
-    .orderBy(dailyMetrics.symbol, desc(dailyMetrics.tradeDate))
-    .then((rows) => {
-      // Group by symbol and take the first (latest) record for each
-      const latestBySymbol = new Map<string, typeof rows[0]>();
-      for (const row of rows) {
-        // Skip rows with null symbol
-        if (row.symbol && !latestBySymbol.has(row.symbol)) {
-          latestBySymbol.set(row.symbol, row);
-        }
-      }
-      return Array.from(latestBySymbol.values());
-    });
+  // Use PostgreSQL window function ROW_NUMBER() to get the latest record for each stock
+  // This is done entirely in the database for optimal performance
+  const latestMetrics = await db.execute(sql`
+    SELECT DISTINCT ON (symbol)
+      symbol,
+      trade_date,
+      close_price,
+      dividend_yield_ttm,
+      yield_percentile,
+      pe_percentile
+    FROM daily_metrics
+    WHERE symbol IS NOT NULL
+    ORDER BY symbol, trade_date DESC
+  `);
 
   // Create a map for quick lookup
   const metricsMap = new Map(
-    latestMetrics
-      .filter((m) => m.symbol !== null)
-      .map((m) => [m.symbol!, m])
+    latestMetrics.rows.map((m: any) => [
+      m.symbol,
+      {
+        symbol: m.symbol,
+        tradeDate: m.trade_date,
+        closePrice: m.close_price,
+        dividendYieldTtm: m.dividend_yield_ttm,
+        yieldPercentile: m.yield_percentile,
+        pePercentile: m.pe_percentile,
+      },
+    ])
   );
 
   // Get all active stocks
