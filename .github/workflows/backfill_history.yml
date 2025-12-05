@@ -1,0 +1,47 @@
+name: Backfill Historical Data
+
+on:
+  # Allow manual trigger only
+  workflow_dispatch:
+    inputs:
+      symbol:
+        description: 'Stock symbol to backfill (required, e.g., 600519)'
+        required: true
+        type: string
+
+jobs:
+  backfill-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run backfill script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+        run: |
+          echo "Running historical data backfill for: ${{ inputs.symbol }}"
+          python scripts/backfill_single_stock.py --symbol ${{ inputs.symbol }}
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Historical data backfilled successfully for ${{ inputs.symbol }} at $(date)"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Historical data backfill failed for ${{ inputs.symbol }} at $(date)"

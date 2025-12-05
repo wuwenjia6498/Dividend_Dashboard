@@ -43,13 +43,18 @@ export function LoadHistoricalData({
       if (result.success) {
         setMessage({
           type: "success",
-          text: `${result.message}！页面将在3秒后刷新...`,
+          text: result.message,
         });
 
-        // Reload page after 3 seconds to show new data
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        // Only auto-reload if we have a record count (local execution)
+        // For serverless (GitHub Actions), user needs to manually refresh after 1-2 minutes
+        if (result.recordCount) {
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        } else {
+          setLoading(false);
+        }
       } else {
         setMessage({
           type: "error",
