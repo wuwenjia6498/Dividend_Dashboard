@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { AddStockDialog } from "@/components/AddStockDialog";
 import { StockActionsMenu } from "@/components/StockActionsMenu";
 import { RefreshButton } from "@/components/RefreshButton";
+import { AboutDialog } from "@/components/AboutDialog";
 import { getSignalStatus } from "@/lib/signals";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -153,7 +154,10 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
               基于股息率分位点的量化选股系统
             </p>
           </div>
-          <RefreshButton />
+          <div className="flex items-center gap-2">
+            <AboutDialog />
+            <RefreshButton />
+          </div>
         </div>
 
         {/* Stats Cards */}
