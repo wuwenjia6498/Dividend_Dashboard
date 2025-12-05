@@ -30,11 +30,16 @@ export function AboutDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="max-w-[780px] max-h-[85vh] overflow-hidden flex flex-col about-dialog-content sm:max-w-[780px]"
+        className="max-w-[780px] max-h-[85vh] overflow-hidden flex flex-col about-dialog-content sm:max-w-[780px] !translate-x-[-50%] !translate-y-[-50%]"
         data-about-dialog="true"
         style={{
           maxWidth: '780px',
-        }}
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 50,
+        } as React.CSSProperties}
       >
         <DialogHeader className="shrink-0 pb-4 border-b">
           <DialogTitle className="text-2xl font-bold">使用说明</DialogTitle>

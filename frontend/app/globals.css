@@ -123,7 +123,8 @@
 
 /* 强制 AboutDialog 居中显示 */
 [data-slot="dialog-content"][data-about-dialog="true"],
-.about-dialog-content[data-slot="dialog-content"] {
+.about-dialog-content[data-slot="dialog-content"],
+[data-about-dialog="true"][data-slot="dialog-content"] {
   position: fixed !important;
   top: 50% !important;
   left: 50% !important;
@@ -131,14 +132,19 @@
   margin: 0 !important;
   max-width: 780px !important;
   width: calc(100vw - 2rem) !important;
+  z-index: 50 !important;
 }
 
 /* 移动端优化 */
 @media (max-width: 640px) {
   [data-slot="dialog-content"][data-about-dialog="true"],
-  .about-dialog-content[data-slot="dialog-content"] {
+  .about-dialog-content[data-slot="dialog-content"],
+  [data-about-dialog="true"][data-slot="dialog-content"] {
     width: calc(100vw - 1rem) !important;
     max-width: calc(100vw - 1rem) !important;
     max-height: 90vh !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
   }
 }
