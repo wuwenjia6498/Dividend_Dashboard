@@ -81,7 +81,8 @@ CREATE TABLE quarterly_financials (
 );
 ```
 
-## 5. 已实现功能 (Implemented Features)
+## 5. 已实现功能 (Implemented
+ Features)
 1. **股票管理：**
     * 支持通过弹窗搜索添加 (自动补全代码和行业)。
     * 支持列表移除 (软删除)。

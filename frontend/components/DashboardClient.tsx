@@ -27,7 +27,13 @@ import { AboutDialog } from "@/components/AboutDialog";
 import { getSignalStatus } from "@/lib/signals";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { ArrowUpDown, Search } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Stock {
   symbol: string;
@@ -44,6 +50,8 @@ interface Stats {
   avgDividendYield: number;
 }
 
+type SortOption = 'percentile' | 'yield';
+
 interface DashboardClientProps {
   stocks: Stock[];
   stats: Stats;
@@ -54,6 +62,7 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
   const [highlightedSymbol, setHighlightedSymbol] = useState<string | null>(null);
   const [waitingForSymbol, setWaitingForSymbol] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortOption>('percentile');
 
   // Handle scrolling and highlighting when a stock is added
   useEffect(() => {
@@ -144,8 +153,23 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
     }
   };
 
+  // Sort stocks based on sortBy selection
+  const sortedStocks = [...stocks].sort((a, b) => {
+    if (sortBy === 'percentile') {
+      // Sort by yield_percentile descending (handle null values as 0)
+      const aValue = a.yieldPercentile ?? 0;
+      const bValue = b.yieldPercentile ?? 0;
+      return bValue - aValue;
+    } else {
+      // Sort by dividend_yield_ttm descending (handle null values as 0)
+      const aValue = a.dividendYieldTtm ?? 0;
+      const bValue = b.dividendYieldTtm ?? 0;
+      return bValue - aValue;
+    }
+  });
+
   // Filter stocks based on search query
-  const filteredStocks = stocks.filter((stock) => {
+  const filteredStocks = sortedStocks.filter((stock) => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase().trim();
@@ -259,10 +283,39 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
               <div>
                 <CardTitle>股票池</CardTitle>
                 <CardDescription>
-                  按股息率分位点排序，机会最大的排在前面
+                  {sortBy === 'percentile' 
+                    ? '按股息率分位点排序，机会最大的排在前面'
+                    : '按绝对股息率排序，收益率最高的排在前面'
+                  }
                 </CardDescription>
               </div>
-              <AddStockDialog onStockAdded={handleStockAdded} />
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-3 py-2 whitespace-nowrap">
+                      <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="text-sm">
+                        {sortBy === 'percentile' ? '按性价比排序 (分位点)' : '按股息率排序 (绝对值)'}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[200px]">
+                    <DropdownMenuItem 
+                      onClick={() => setSortBy('percentile')}
+                      className={sortBy === 'percentile' ? 'bg-accent' : ''}
+                    >
+                      按性价比排序 (分位点)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setSortBy('yield')}
+                      className={sortBy === 'yield' ? 'bg-accent' : ''}
+                    >
+                      按股息率排序 (绝对值)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <AddStockDialog onStockAdded={handleStockAdded} />
+              </div>
             </div>
             {/* Search Input */}
             <div className="space-y-2">
