@@ -62,7 +62,7 @@ export function DashboardClient({ stocks, stats }: DashboardClientProps) {
   const [highlightedSymbol, setHighlightedSymbol] = useState<string | null>(null);
   const [waitingForSymbol, setWaitingForSymbol] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortBy, setSortBy] = useState<SortOption>('percentile');
+  const [sortBy, setSortBy] = useState<SortOption>('yield');
 
   // Handle scrolling and highlighting when a stock is added
   useEffect(() => {

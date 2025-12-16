@@ -87,8 +87,8 @@ export async function getDashboardData(): Promise<DashboardData> {
         tradeDate: metrics?.tradeDate || null,
       };
     })
-    // Sort by yield percentile descending (best opportunities first)
-    .sort((a, b) => (b.yieldPercentile || 0) - (a.yieldPercentile || 0));
+    // Sort by dividend yield (TTM) descending (highest yield first)
+    .sort((a, b) => (b.dividendYieldTtm || 0) - (a.dividendYieldTtm || 0));
 
   // Calculate stats
   const stocksWithYield = stocks.filter((s) => s.dividendYieldTtm !== null);
